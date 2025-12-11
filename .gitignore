@@ -5,3 +5,4 @@
 /.vs
 /blazorMovieList/bin/Debug/net10.0
 /blazorMovieList/obj
+/blazorMovieList/bin
