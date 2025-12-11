@@ -1,0 +1,54 @@
+﻿@page "/login"
+@using Blazored.LocalStorage
+
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService localStorage
+
+<h3>Login</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+<EditForm Model="@loginModel" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Username:</label>
+        <InputText @bind-Value="loginModel.Username" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="loginModel.Password" type="password" />
+    </div>
+
+    <button type="submit">Login</button>
+</EditForm>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private string errorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        if (loginModel.Username == "admin" && loginModel.Password == "password")
+        {
+            await localStorage.SetItemAsync(Constants.authtoken, loginModel.Username);
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            errorMessage = "Invalid username or password.";
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+}

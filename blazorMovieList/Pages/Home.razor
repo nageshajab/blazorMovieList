@@ -1,0 +1,20 @@
+﻿@page "/"
+@using Blazored.LocalStorage
+
+@inject ILocalStorageService localStorage
+@inject NavigationManager NavigationManager
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var username = await localStorage.GetItemAsync<string>(Constants.authtoken);
+        if (string.IsNullOrEmpty(username))
+            NavigationManager.NavigateTo("login", forceLoad: true);
+    }
+}
