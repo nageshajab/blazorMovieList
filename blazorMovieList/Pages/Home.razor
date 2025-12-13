@@ -1,20 +1,107 @@
 ﻿@page "/"
 @using Blazored.LocalStorage
+@using myazfunction.Models;
+@using System.Threading.Tasks;
 
 @inject ILocalStorageService localStorage
 @inject NavigationManager NavigationManager
+@inject HttpClient Http
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<table>
+    @foreach (var movie in movies)
+    {
+        <tr>
+            <td><a href="@movie.Url"> @movie.Title</a></td>
+            <td>@movie.Url</td>
+            <td>@movie.tags</td>
+            <td>
+                <button class="btn btn-danger btn-sm" @onclick="() => DeleteMovie(movie.Id)">
+                    Delete
+                </button>
+            </td>
 
-Welcome to your new app.
+        </tr>
+    }
+</table>
 
 @code {
-    protected override async Task OnInitializedAsync()
+    List<Movie> movies = new List<Movie>();
+    protected override async System.Threading.Tasks.Task OnInitializedAsync()
     {
-        var username = await localStorage.GetItemAsync<string>(Constants.authtoken);
-        if (string.IsNullOrEmpty(username))
+        var userid = await localStorage.GetItemAsync<string>(Constants.authtoken);
+        if (string.IsNullOrEmpty(userid))
+        {
             NavigationManager.NavigateTo("login", forceLoad: true);
+            return;
+        }
+
+        // ✅ Example POST request
+        var request = new SearchRequest
+        {
+            userid = userid,
+            searchtxt = "",
+            pageNumber = 1,
+            isJav = false
+        };
+        var response = await Http.PostAsJsonAsync("api/GetMovies", request);
+        var result = await response.Content.ReadFromJsonAsync<MovieResponse>();
+
+        if (response.IsSuccessStatusCode)
+        {
+            movies = result.movies;
+            //response.movies.Count();
+            Console.WriteLine("Movie added successfully");
+        }
+        else
+        {
+            Console.WriteLine("Error: " + response.StatusCode);
+        }
+    }
+
+    private async System.Threading.Tasks.Task DeleteMovie(string movieId)
+    {
+        var userid = await localStorage.GetItemAsync<string>(Constants.authtoken);
+
+        var deleteRequest = new
+        {
+            userid = userid,
+            id = movieId
+        };
+
+        var response = await Http.PostAsJsonAsync("api/DeleteMovie?id="+movieId, deleteRequest);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Remove from UI without reloading page
+            movies = movies.Where(m => m.Id != movieId).ToList();
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Delete failed: " + response.StatusCode);
+        }
+    }
+
+    public class Pagination
+    {
+        public int pageNumber { get; set; }
+        public int pageSize { get; set; }
+        public int totalCount { get; set; }
+        public int totalPages { get; set; }
+    }
+    public class MovieResponse
+    {
+        public List<Movie> movies { get; set; }
+        public List<string> tags { get; set; }
+        public Pagination pagination { get; set; }
+    }
+    public class SearchRequest
+    {
+        public string userid { get; set; }
+        public string searchtxt { get; set; }
+        public int pageNumber { get; set; }
+        public bool isJav { get; set; }
     }
 }

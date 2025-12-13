@@ -1,10 +1,10 @@
 ﻿@page "/login"
 @using Blazored.LocalStorage
-
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@using myazfunction.Models;
 
 @inject NavigationManager NavigationManager
 @inject ILocalStorageService localStorage
+@inject HttpClient Http
 
 <h3>Login</h3>
 
@@ -12,6 +12,13 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 {
     <p style="color:red">@errorMessage</p>
 }
+
+<div id="g_id_onload"
+     data-client_id="846946142949-l3i9t3cct1p39nad709n6m0q5e499fi6.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse">
+</div>
+
+<div class="g_id_signin" data-type="standard"></div>
 
 <EditForm Model="@loginModel" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -29,20 +36,38 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
     <button type="submit">Login</button>
 </EditForm>
 
+
 @code {
     private LoginModel loginModel = new LoginModel();
     private string errorMessage;
 
-    private async Task HandleValidSubmit()
+    private async System.Threading.Tasks.Task HandleValidSubmit()
     {
-        if (loginModel.Username == "admin" && loginModel.Password == "password")
+        if (loginModel.Username == null || loginModel.Password == null)
         {
-            await localStorage.SetItemAsync(Constants.authtoken, loginModel.Username);
+            errorMessage = "Please enter both username and password.";
+            return;
+        }
+
+        Users user = new Users();
+        user.UserName = loginModel.Username;
+        user.Password = loginModel.Password;
+
+        var response = await Http.PostAsJsonAsync("api/login", user);
+       
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            await localStorage.SetItemAsync(Constants.authtoken, result.user.Id);
             NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            errorMessage = "Invalid username or password.";
         }
         else
         {
-            errorMessage = "Invalid username or password.";
+            errorMessage = "Something went wrong calling api";
         }
     }
 
@@ -50,5 +75,10 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
     {
         public string Username { get; set; }
         public string Password { get; set; }
+    }
+    public class LoginResponse
+    {
+        public string message { get; set; }
+        public Users user { get; set; }
     }
 }

@@ -13,14 +13,22 @@ namespace blazorMovieList
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddScoped(sp => new HttpClient
+            {
+                // BaseAddress = new Uri("https://myreactappapimanagementservice.azure-api.net/myreactappbackendapi/")
+                BaseAddress = new Uri("http://localhost:7018/")
+            });
 
             // Add authentication core
             builder.Services.AddOptions();
             builder.Services.AddAuthorizationCore();
             builder.Services.AddBlazoredLocalStorage();
-
-            await builder.Build().RunAsync();
+            builder.Services.AddScoped<GoogleAuthService>();
+            //await builder.Build().RunAsync();
+            var app = builder.Build();
+            ServiceLocator.GoogleAuth = app.Services.GetRequiredService<GoogleAuthService>();
+            await app.RunAsync();
         }
     }
 }
