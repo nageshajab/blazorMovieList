@@ -1,14 +1,16 @@
 ﻿@inject NavigationManager NavigationManager
 @inherits LayoutComponentBase
 
+
 <div class="main-layout">
 
     <!-- ✅ Top Navigation Bar -->
     <NavMenu />
-
+    <Blazored.Toast.BlazoredToast />
     <!-- ✅ Page Content -->
     <main class="container mt-3">
         <article>
+          
             @Body
         </article>
     </main>

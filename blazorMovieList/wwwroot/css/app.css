@@ -113,3 +113,28 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+/* my changes start */
+.nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background-color: #222;
+    color: white;
+}
+.nav-content {
+    display: flex;
+    align-items: center;
+    gap: 24px; /* space between left and right groups */
+}
+
+.nav-content ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex; /* make li’s horizontal */
+    align-items: center;
+    gap: 12px; /* space between items */
+}
+
+/* my changes end */

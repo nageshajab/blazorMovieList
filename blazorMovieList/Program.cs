@@ -1,5 +1,4 @@
 using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -24,10 +23,9 @@ namespace blazorMovieList
             builder.Services.AddOptions();
             builder.Services.AddAuthorizationCore();
             builder.Services.AddBlazoredLocalStorage();
-            builder.Services.AddScoped<GoogleAuthService>();
+            
             //await builder.Build().RunAsync();
             var app = builder.Build();
-            ServiceLocator.GoogleAuth = app.Services.GetRequiredService<GoogleAuthService>();
             await app.RunAsync();
         }
     }
